@@ -1,93 +1,95 @@
 #include "sort.h"
-#include <stdio.h>
-/**
- * swap - this change two values in ascending or descending order
- * @arr: the array
- * @item1: the item one
- * @item2: the item two
- * @order: 1: ascending order, 0 descending order
- */
-void swap(int arr[], int item1, int item2, int order)
-{
-	int temp;
 
-	if (order == (arr[item1] > arr[item2]))
-	{
-		temp = arr[item1];
-		arr[item1] = arr[item2];
-		arr[item2] = temp;
-	}
+void swap_ints(int *a, int *b);
+int hoare_partition(int *array, size_t size, int left, int right);
+void hoare_sort(int *array, size_t size, int left, int right);
+void quick_sort_hoare(int *array, size_t size);
+
+/**
+ * swap_ints - Swap two integers in an array.
+ * @a: The first integer to swap.
+ * @b: The second integer to swap.
+ */
+void swap_ints(int *a, int *b)
+{
+	int tmp;
+
+	tmp = *a;
+	*a = *b;
+	*b = tmp;
 }
-/**
- * merge - this is sort bitonic sequences recursively in both orders
- * @arr: the array
- * @low: the first element
- * @nelemnt: the elements number
- * @order: 1: the ascending order, 0 descending order
- */
-void merge(int arr[], int low, int nelemnt, int order)
-{
-	int mid, i;
 
-	if (nelemnt > 1)
-	{
-		mid = nelemnt / 2;
-		for (i = low; i < low + mid; i++)
-			swap(arr, i, i + mid, order);
-		merge(arr, low, mid, order);
-		merge(arr, low + mid, mid, order);
-	}
-}
 /**
- * bitonicsort - bitonic sort algorithm implementation
- * @arr: the array
- * @low: the first element
- * @nelemnt: the number of elements
- * @order: 1: the ascending order, 0 descending order
- * @size: the array lenght
+ * hoare_partition - Order a subset of an array of integers
+ *                   according to the hoare partition scheme.
+ * @array: The array of integers.
+ * @size: The size of the array.
+ * @left: The starting index of the subset to order.
+ * @right: The ending index of the subset to order.
+ *
+ * Return: The final partition index.
+ *
+ * Description: Uses the last element of the partition as the driver.
+ * Prints the array after each swap of two elements.
  */
-void bitonicsort(int arr[], int low, int nelemnt, int order, int size)
+int hoare_partition(int *array, size_t size, int left, int right)
 {
-	int mid;
+	int driver, up, down;
 
-	if (nelemnt > 1)
+	driver = array[right];
+	for (up = left - 1, down = right + 1; up < down;)
 	{
-		if (order >= 1)
+		do {
+			up++;
+		} while (array[up] < driver);
+		do {
+			down--;
+		} while (array[down] > driver);
+
+		if (up < down)
 		{
-			printf("Merging [%i/%i] (UP):\n", nelemnt, size);
-			print_array(&arr[low], nelemnt);
-		}
-		else
-		{
-			printf("Merging [%i/%i] (DOWN):\n", nelemnt, size);
-			print_array(&arr[low], nelemnt);
-		}
-		mid = nelemnt / 2;
-		bitonicsort(arr, low, mid, 1, size);
-		bitonicsort(arr, low + mid, mid, 0, size);
-		merge(arr, low, nelemnt, order);
-		if (order <= 0)
-		{
-			printf("Result [%i/%i] (DOWN):\n", nelemnt, size);
-			print_array(&arr[low], nelemnt);
-		}
-		if (order >= 1)
-		{
-			printf("Result [%i/%i] (UP):\n", nelemnt, size);
-			print_array(&arr[low], nelemnt);
+			swap_ints(array + up, array + down);
+			print_array(array, size);
 		}
 	}
-}
-/**
- * bitonic_sort - this prepare the terrain to bitonic sort algorithm
- * @array: the array
- * @size: the array lenght
- */
-void bitonic_sort(int *array, size_t size)
-{
-	int order = 1;
 
-	if (!array || size < 2)
+	return (up);
+}
+
+/**
+ * hoare_sort - Implement the quicksort algorithm through recursion.
+ * @array: An array of integers to sort.
+ * @size: The size of the array.
+ * @left: The starting index of the array partition to order.
+ * @right: The ending index of the array partition to order.
+ *
+ * Description: Uses the Hoare partition scheme.
+ */
+void hoare_sort(int *array, size_t size, int left, int right)
+{
+	int belong;
+
+	if (right - left > 0)
+	{
+		belong = hoare_partition(array, size, left, right);
+		hoare_sort(array, size, left, belong - 1);
+		hoare_sort(array, size, belong, right);
+	}
+}
+
+/**
+ * quick_sort_hoare - Sort an array of integers in ascending
+ *                    order using the quicksort algorithm.
+ * @array: An array of integers.
+ * @size: The size of the array.
+ *
+ * Description: Uses the Hoare partition scheme. Prints
+ * the array after each swap of two elements.
+ */
+void quick_sort_hoare(int *array, size_t size)
+{
+	if (array == NULL || size < 2)
 		return;
-	bitonicsort(array, 0, size, order, size);
+
+	hoare_sort(array, size, 0, size - 1);
 }
